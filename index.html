@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Campus Market Place</title>
+    <meta name="description" content="A student marketplace to buy and sell notes, books, and services.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="app-header">
+        <div class="container header-inner">
+            <div class="brand">
+                <div class="logo" aria-hidden="true">📚</div>
+                <h1 class="title">Campus Market Place</h1>
+            </div>
+            <button id="addItemBtn" class="btn btn-primary">+ New Listing</button>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="toolbar">
+            <div class="search">
+                <input id="searchInput" type="search" placeholder="Search notes, books, services..." aria-label="Search listings">
+            </div>
+            <div class="filters" role="tablist" aria-label="Category filters">
+                <button class="chip active" data-category="all" role="tab" aria-selected="true">All</button>
+                <button class="chip" data-category="notes" role="tab" aria-selected="false">Notes</button>
+                <button class="chip" data-category="books" role="tab" aria-selected="false">Books</button>
+                <button class="chip" data-category="services" role="tab" aria-selected="false">Activities/Services</button>
+            </div>
+            <div class="sort">
+                <label for="sortSelect" class="sr-only">Sort by</label>
+                <select id="sortSelect" aria-label="Sort listings">
+                    <option value="newest">Newest</option>
+                    <option value="price-asc">Price: Low to High</option>
+                    <option value="price-desc">Price: High to Low</option>
+                    <option value="title">Title A→Z</option>
+                </select>
+            </div>
+        </section>
+
+        <section id="emptyState" class="empty-state hidden" aria-live="polite">
+            <div class="illustration">🛒</div>
+            <h2>No listings yet</h2>
+            <p>Be the first to post notes, books, or campus services.</p>
+            <button id="seedBtn" class="btn btn-secondary">Load sample listings</button>
+        </section>
+
+        <section id="grid" class="grid" aria-live="polite" aria-busy="false"></section>
+    </main>
+
+    <dialog id="listingDialog" class="modal">
+        <form method="dialog" id="listingForm" class="modal-card" novalidate>
+            <header class="modal-header">
+                <h3 id="dialogTitle">New Listing</h3>
+                <button class="icon-btn" id="closeDialogBtn" title="Close" value="cancel" aria-label="Close">✕</button>
+            </header>
+            <div class="modal-body">
+                <input type="hidden" id="listingId">
+                <div class="form-field">
+                    <label for="titleInput">Title</label>
+                    <input id="titleInput" type="text" required maxlength="80" placeholder="e.g., Calculus II Notes">
+                    <small class="hint">Max 80 characters</small>
+                </div>
+                <div class="form-field">
+                    <label for="categorySelect">Category</label>
+                    <select id="categorySelect" required>
+                        <option value="notes">Notes</option>
+                        <option value="books">Books</option>
+                        <option value="services">Activities/Services</option>
+                    </select>
+                </div>
+                <div class="form-split">
+                    <div class="form-field">
+                        <label for="priceInput">Price (₹)</label>
+                        <input id="priceInput" type="number" min="0" step="1" placeholder="0 for free" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="conditionSelect">Condition</label>
+                        <select id="conditionSelect">
+                            <option>New</option>
+                            <option>Like New</option>
+                            <option>Good</option>
+                            <option>Fair</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label for="descInput">Description</label>
+                    <textarea id="descInput" rows="4" maxlength="500" placeholder="Key details, edition, topics covered, timing, etc."></textarea>
+                    <small class="hint">Max 500 characters</small>
+                </div>
+                <div class="form-field">
+                    <label for="sellerInput">Seller name</label>
+                    <input id="sellerInput" type="text" maxlength="60" placeholder="Your name" required>
+                </div>
+                <div class="form-split">
+                    <div class="form-field">
+                        <label for="emailInput">Email</label>
+                        <input id="emailInput" type="email" placeholder="name@college.edu" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="phoneInput">Phone</label>
+                        <input id="phoneInput" type="tel" placeholder="Optional">
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label for="imageInput">Image URL</label>
+                    <input id="imageInput" type="url" placeholder="https://... (optional)">
+                </div>
+            </div>
+            <footer class="modal-footer">
+                <button class="btn btn-ghost" value="cancel">Cancel</button>
+                <button id="saveListingBtn" class="btn btn-primary" value="confirm">Save</button>
+            </footer>
+        </form>
+    </dialog>
+
+    <dialog id="detailsDialog" class="modal">
+        <div class="modal-card">
+            <header class="modal-header">
+                <h3 id="detailsTitle">Listing</h3>
+                <button class="icon-btn" id="closeDetailsBtn" title="Close" aria-label="Close">✕</button>
+            </header>
+            <div class="modal-body details-body" id="detailsBody"></div>
+            <footer class="modal-footer">
+                <button class="btn btn-ghost" id="detailsDeleteBtn">Delete</button>
+                <button class="btn btn-secondary" id="detailsEditBtn">Edit</button>
+                <button class="btn btn-primary" id="contactSellerBtn">Contact Seller</button>
+            </footer>
+        </div>
+    </dialog>
+
+    <dialog id="contactDialog" class="modal">
+        <div class="modal-card">
+            <header class="modal-header">
+                <h3>Contact Seller</h3>
+                <button class="icon-btn" id="closeContactBtn" title="Close" aria-label="Close">✕</button>
+            </header>
+            <div class="modal-body" id="contactBody"></div>
+            <footer class="modal-footer">
+                <button class="btn btn-primary" id="copyContactBtn">Copy Details</button>
+            </footer>
+        </div>
+    </dialog>
+
+    <template id="cardTemplate">
+        <article class="card" tabindex="0">
+            <div class="thumb"></div>
+            <div class="card-body">
+                <div class="card-header">
+                    <h3 class="card-title"></h3>
+                    <span class="price"></span>
+                </div>
+                <div class="meta">
+                    <span class="chip small category"></span>
+                    <span class="dot">•</span>
+                    <span class="condition"></span>
+                </div>
+                <p class="desc"></p>
+            </div>
+        </article>
+    </template>
+
+    <script src="script.js" defer></script>
+</body>
+</html>
+
+
+
